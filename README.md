@@ -1,2 +1,11 @@
-# identity-sheet
-axentx product · A spreadsheet management tool that uses identity-based referencing instead of positional cell references to prevent errors and simplify maintenance
+# Identity Sheet
+A simple spreadsheet model with a web interface and persistence.
+
+## Features
+* Grid rendering
+* Cell editing
+* Formula recalculation
+* Error message display
+
+## Tests
+Run `python -m pytest` to execute the tests.

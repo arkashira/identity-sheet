@@ -1,44 +1,40 @@
-import json
 from dataclasses import dataclass
-from typing import Dict, List
+from typing import List
 
 @dataclass
-class Identity:
-    id: int
-    name: str
+class Cell:
+    value: str
+    formula: str = ""
 
-class IdentitySheet:
-    def __init__(self):
-        self.identities: Dict[int, Identity] = {}
-        self.spreadsheet: Dict[int, List[int]] = {}
+@dataclass
+class Grid:
+    rows: int
+    cols: int
+    cells: List[List[Cell]]
 
-    def create_identity(self, id: int, name: str) -> Identity:
-        if id in self.identities:
-            raise ValueError("Identity already exists")
-        identity = Identity(id, name)
-        self.identities[id] = identity
-        return identity
+    def render(self):
+        for row in range(self.rows):
+            for col in range(self.cols):
+                cell = self.cells[row][col]
+                print(f"Cell ({row}, {col}): {cell.value}")
 
-    def reference_identity(self, id: int, spreadsheet_id: int) -> None:
-        if id not in self.identities:
-            raise ValueError("Identity does not exist")
-        if spreadsheet_id not in self.spreadsheet:
-            self.spreadsheet[spreadsheet_id] = []
-        self.spreadsheet[spreadsheet_id].append(id)
+    def edit_cell(self, row: int, col: int, new_value: str):
+        self.cells[row][col].value = new_value
+        self.recalculate()
 
-    def update_spreadsheet(self, spreadsheet_id: int, new_references: List[int]) -> None:
-        if spreadsheet_id not in self.spreadsheet:
-            raise ValueError("Spreadsheet does not exist")
-        self.spreadsheet[spreadsheet_id] = new_references
+    def recalculate(self):
+        for row in range(self.rows):
+            for col in range(self.cols):
+                cell = self.cells[row][col]
+                if cell.formula:
+                    try:
+                        cell.value = str(eval(cell.formula))
+                    except Exception as e:
+                        cell.value = f"Error: {str(e)}"
 
-    def get_references(self, spreadsheet_id: int) -> List[Identity]:
-        if spreadsheet_id not in self.spreadsheet:
-            raise ValueError("Spreadsheet does not exist")
-        return [self.identities[id] for id in self.spreadsheet[spreadsheet_id]]
-
-    def to_json(self) -> str:
-        data = {
-            "identities": [{"id": id, "name": identity.name} for id, identity in self.identities.items()],
-            "spreadsheet": {str(spreadsheet_id): references for spreadsheet_id, references in self.spreadsheet.items()}
-        }
-        return json.dumps(data)
+    def display_error_messages(self):
+        for row in range(self.rows):
+            for col in range(self.cols):
+                cell = self.cells[row][col]
+                if "Error:" in cell.value:
+                    print(f"Error in cell ({row}, {col}): {cell.value}")
